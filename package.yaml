@@ -1,0 +1,47 @@
+name:                CS565Grader
+version:             0.1.0.0
+github:              "ccyip/CS565Grader"
+license:             BSD3
+author:              "Qianchuan Ye"
+maintainer:          "yeqianchuan@gmail.com"
+copyright:           "2020 Qianchuan Ye"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/ccyip/CS565Grader#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+
+executables:
+  CS565Grader-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - CS565Grader
+
+tests:
+  CS565Grader-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - CS565Grader
