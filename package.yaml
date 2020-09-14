@@ -22,7 +22,9 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - split
+- mtl
 - megaparsec
+- pretty-simple
 
 library:
   source-dirs: src
