@@ -36,8 +36,13 @@ pHomework = do
   eof
   return Homework { hwName = name
                   , hwPenalty = read <$> lookup "penalty" opts
+                  , hwAllowedModuleAxioms = readOptionList "allowed_module_axioms" opts
+                  , hwAllowedAxioms = readOptionList "allowed_axioms" opts
                   , hwExercises = exercises
                   }
+
+readOptionList :: String -> [(String, String)] -> [String]
+readOptionList key opts = maybe [] (splitOn ",") $ lookup key opts
 
 pStart :: Parser String
 pStart = string "----" *> space *> pQuoted <* eol
@@ -47,7 +52,7 @@ pExercise = do
   name <- string "*> " *> pQuoted <* eol
   points <- string "Possible points: " *> some digitChar <* eol
   space
-  items <- some pNamedItem <|> (:[]) <$> pItem ""
+  items <- some pNamedItem <|> (:[]) <$> pItem name
   return Exercise { excName = name
                   , excPoints = read points
                   , excItems = items
@@ -62,12 +67,11 @@ pItem name = do
   opts <- many pOption
   space
   let ty = case manualGrade of
-        Just _ -> SoundFalsifier
-        Nothing -> CompleteChecker
+             Just _ -> SoundFalsifier
+             Nothing -> CompleteChecker
   checkers <- some pTypedChecker <|> (:[]) <$> pChecker ty
   return Item { itName = name
-              , itDependencies = splitOn "," <$> lookup "dependencies" opts
-              , itAllowedAxioms = splitOn "," <$> lookup "allowed_axioms" opts
+              , itDependencies = readOptionList "dependencies" opts
               , itManualGrade = manualGrade
               , itCheckers = checkers
               }

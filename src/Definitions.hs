@@ -3,6 +3,8 @@ module Definitions where
 data Homework = Homework
   { hwName :: String
   , hwPenalty :: Maybe Int
+  , hwAllowedModuleAxioms :: [String]
+  , hwAllowedAxioms :: [String]
   , hwExercises :: [Exercise]
   } deriving (Show)
 
@@ -14,8 +16,7 @@ data Exercise = Exercise
 
 data Item = Item
   { itName :: String
-  , itDependencies :: Maybe [String]
-  , itAllowedAxioms :: Maybe [String]
+  , itDependencies :: [String]
   , itManualGrade :: Maybe ManualGrade
   , itCheckers :: [Checker]
   } deriving (Show)
@@ -36,3 +37,24 @@ data Checker = Checker
 
 data CheckerType = CompleteChecker | SoundVerifier | SoundFalsifier
   deriving (Show)
+
+data Feedback = Feedback
+  { fbName :: String
+  , fbTotalPoints :: Int
+  , fbPoints :: Int
+  , fbExercises :: [ExerciseFeedback]
+  } deriving (Show)
+
+data ExerciseFeedback = ExerciseFeedback
+  { efbName :: String
+  , efbTotalPoints :: Int
+  , efbPoints :: Int
+  , efbItems :: [ItemFeedback]
+  } deriving (Show)
+
+data ItemFeedback = ItemFeedback
+  { ifbName :: String
+  , ifbScore :: Score
+  , ifbStatus :: Maybe Bool
+  , ifbComment :: String
+  } deriving (Show)
