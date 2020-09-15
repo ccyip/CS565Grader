@@ -1,5 +1,7 @@
 module Definitions where
 
+import Data.Ratio
+
 data Homework = Homework
   { hwName :: String
   , hwPenalty :: Maybe Int
@@ -43,7 +45,8 @@ data Feedback = Feedback
   { fbName :: String
   , fbTotalPoints :: Int
   , fbPoints :: Int
-  , fbFinal :: Int
+  , fbRawScore :: Ratio Int
+  , fbFinalScore :: Ratio Int
   , fbPenalty :: Maybe Int
   , fbComment :: String
   , fbExercises :: [ExerciseFeedback]

@@ -4,6 +4,7 @@ module Grader
     ( grade
     ) where
 
+import Data.Ratio
 import Data.List
 import Data.Maybe
 import Control.Monad.State
@@ -38,7 +39,8 @@ grade Homework { hwName = name
   Feedback { fbName = name
            , fbTotalPoints = total
            , fbPoints = points
-           , fbFinal = penalize hwPenalty points
+           , fbRawScore = raw
+           , fbFinalScore = maybe raw (\p -> raw * (1 - p % 100)) hwPenalty
            , fbPenalty = hwPenalty
            , fbComment = hwComment
            , fbExercises = efbs
@@ -54,8 +56,7 @@ grade Homework { hwName = name
                   }
         total = sum $ map efbTotalPoints efbs
         points = sum $ map efbPoints efbs
-        penalize (Just p) x = ceiling $ fromIntegral x * (1.0 - fromIntegral p / 100.0)
-        penalize Nothing x = x
+        raw = points % total
 
 gradeExercise :: Exercise -> GradeState ExerciseFeedback
 gradeExercise Exercise { excName = name
