@@ -92,7 +92,7 @@ buildDirMap gb students = mapMaybe go gb
 runPrepare :: [(String, String)] -> FilePath -> FilePath -> IO ()
 runPrepare dirMap top hwFile = do
   message "Preparing..."
-  mapM_ (\(id, dir) -> runPrepare_ id dir top hwFile) dirMap
+  forM_ dirMap $ \(id, dir) -> runPrepare_ id dir top hwFile
   message "Finished preparing"
 
 runPrepare_ :: String -> String -> FilePath -> FilePath -> IO ()
@@ -159,7 +159,7 @@ feedbackExercise ExerciseFeedback { efbName = name
   putStrLn $ "Earned Points: " ++ show points
   if ifbName (head items) == name
     then feedbackItem False $ head items
-    else mapM_ (feedbackItem True) items
+    else forM_ items $ feedbackItem True
   putStrLn ""
 
 feedbackItem :: Bool -> ItemFeedback -> IO ()
