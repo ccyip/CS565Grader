@@ -4,4 +4,4 @@ import Lib
 import System.Environment
 
 main :: IO ()
-main = getArgs >>= run . head
+main = getArgs >>= run

@@ -21,9 +21,15 @@ description:         Please see the README on GitHub at <https://github.com/ccyi
 dependencies:
 - base >= 4.7 && < 5
 - text
+- bytestring
+- vector
 - split
 - mtl
 - megaparsec
+- filepath
+- directory
+- cassava
+- time
 - pretty-simple
 
 library:
