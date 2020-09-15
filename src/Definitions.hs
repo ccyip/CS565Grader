@@ -3,6 +3,7 @@ module Definitions where
 data Homework = Homework
   { hwName :: String
   , hwPenalty :: Maybe Int
+  , hwComment :: String
   , hwAllowedModuleAxioms :: [String]
   , hwAllowedAxioms :: [String]
   , hwExercises :: [Exercise]
@@ -42,6 +43,9 @@ data Feedback = Feedback
   { fbName :: String
   , fbTotalPoints :: Int
   , fbPoints :: Int
+  , fbFinal :: Int
+  , fbPenalty :: Maybe Int
+  , fbComment :: String
   , fbExercises :: [ExerciseFeedback]
   } deriving (Show)
 

@@ -26,13 +26,19 @@ feedback :: Feedback -> IO ()
 feedback Feedback { fbName = name
                   , fbTotalPoints = total
                   , fbPoints = points
+                  , fbFinal = final
+                  , fbPenalty
+                  , fbComment
                   , fbExercises = excs
                   } = do
   putStrLn $ "~~~ Feedback ~~~"
   putStrLn $ "Homework Name: " ++ name
-  putStrLn $ "Total Points: " ++ show total
-  putStrLn $ "Earned Points: " ++ show points
   putStrLn $ "Percentage Score: " ++ show percentage ++ "%"
+  putStrLn $ "Total Possible Points: " ++ show total
+  putStrLn $ "Earned Points: " ++ show final
+  putStrLn $ "Raw Points: " ++ show points
+  maybe (return ()) (\pen -> putStrLn ("Applied Penalty: -" ++ show pen ++ "%")) fbPenalty
+  putStrLn $ "Comment: " ++ if null fbComment then "None" else fbComment
   putStrLn ""
   feedbackSummary excs
   putStrLn ""

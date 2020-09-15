@@ -5,6 +5,7 @@ module Parser
     ) where
 
 import Control.Monad
+import Data.Maybe
 import Data.Bifunctor
 import Data.Char
 import Data.Void
@@ -35,11 +36,15 @@ pHomework = do
   space
   eof
   return Homework { hwName = name
-                  , hwPenalty = read <$> lookup "penalty" opts
+                  , hwPenalty = checkPenalty . read <$> lookup "penalty" opts
+                  , hwComment = fromMaybe "" $ lookup "comment" opts
                   , hwAllowedModuleAxioms = readOptionList "allowed_module_axioms" opts
                   , hwAllowedAxioms = readOptionList "allowed_axioms" opts
                   , hwExercises = exercises
                   }
+    where checkPenalty x
+            | 0 < x && x <= 100 = x
+            | otherwise = error "Illegal penalty"
 
 readOptionList :: String -> [(String, String)] -> [String]
 readOptionList key opts = maybe [] (splitOn ",") $ lookup key opts

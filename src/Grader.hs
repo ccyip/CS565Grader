@@ -30,13 +30,17 @@ type GradeState = State Env
 grade :: Homework -> Feedback
 grade Homework { hwName = name
                , hwPenalty
+               , hwComment
                , hwAllowedModuleAxioms
                , hwAllowedAxioms
                , hwExercises
                } =
   Feedback { fbName = name
-           , fbTotalPoints = sum $ map efbTotalPoints efbs
-           , fbPoints = sum $ map efbPoints efbs
+           , fbTotalPoints = total
+           , fbPoints = points
+           , fbFinal = penalize hwPenalty points
+           , fbPenalty = hwPenalty
+           , fbComment = hwComment
            , fbExercises = efbs
            }
   where efbs = evalState (mapM gradeExercise hwExercises) env
@@ -48,6 +52,10 @@ grade Homework { hwName = name
                   , evAllowedModuleAxioms = hwAllowedModuleAxioms
                   , evAllowedAxioms = hwAllowedAxioms
                   }
+        total = sum $ map efbTotalPoints efbs
+        points = sum $ map efbPoints efbs
+        penalize (Just p) x = ceiling $ fromIntegral x * (1.0 - fromIntegral p / 100.0)
+        penalize Nothing x = x
 
 gradeExercise :: Exercise -> GradeState ExerciseFeedback
 gradeExercise Exercise { excName = name
