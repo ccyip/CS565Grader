@@ -25,6 +25,7 @@ import Data.List.Split (splitOn)
 import Data.Time
 import System.Process.Typed
 import System.Exit
+import System.Environment
 import System.IO
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -61,8 +62,12 @@ scoreFileName = "score"
 
 usage :: IO ()
 usage = do
+  prog <- getProgName
   putStrLn "Usage:"
-  error ""
+  putStrLn $ prog ++ " prepare <workdir> <homework file>"
+  putStrLn $ prog ++ " grade <workdir> [student IDs]"
+  putStrLn $ prog ++ " publish <workdir>"
+  exitFailure
 
 message :: String -> IO ()
 message x = putStrLn $ ">> " ++ x
