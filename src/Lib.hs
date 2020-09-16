@@ -10,6 +10,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Control.Monad
+import Data.Void
 import Data.Maybe
 import Data.List
 import Data.Bifunctor
@@ -17,14 +18,16 @@ import System.FilePath
 import System.Directory
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
-import Data.Vector (Vector, (!))
+import Data.Vector (Vector, (!), (//))
 import qualified Data.Vector as V
-import Data.Csv
+import qualified Data.Csv as Csv
 import Data.List.Split (splitOn)
 import Data.Time
 import System.Process.Typed
 import System.Exit
 import System.IO
+import Text.Megaparsec
+import Text.Megaparsec.Char
 
 import Text.Pretty.Simple (pPrint)
 
@@ -41,10 +44,14 @@ inputDir top = top </> "input"
 buildDir top = top </> "build"
 outputDir top = top </> "output"
 
-gradebookFile top = inputDir top </> "gradebook.csv"
+gradebookFileName = "gradebook.csv"
+gradebookFile top = inputDir top </> gradebookFileName
 auxDir top = inputDir top </> "aux"
 hwDir top =  inputDir top </> "hw"
-miscFiles top = map (hwDir top </>) ["index.html"]
+
+miscFileNames = ["index.html"]
+
+feedbackDir top = outputDir top </> "feedback"
 
 buildDirFromId top id = buildDir top </> dropWhile (== '#') id
 logFileName = "log"
@@ -67,14 +74,15 @@ run_ :: String -> FilePath -> [String] -> IO ()
 run_ cmd top args = do
   gb <- loadGradebook top
   students <- loadStudentDirs top
-  go cmd args $ buildDirMap gb students
-    where go "prep" (hwFile:_) dirMap = runPrepare dirMap top hwFile
-          go "grade" _ dirMap = runGrade dirMap top
-          go _ _ _ = usage
+  go cmd args gb $ buildDirMap (tail gb) students
+    where go "prepare" (hwFile:_) _ dirMap = runPrepare dirMap top hwFile
+          go "grade" _ _ dirMap = runGrade dirMap top
+          go "publish" _ gb dirMap = runPublish dirMap top gb
+          go _ _ _ _ = usage
 
 loadGradebook :: FilePath -> IO [Vector String]
 loadGradebook top = do
-  gb <- decode NoHeader <$> BL.readFile (gradebookFile top)
+  gb <- Csv.decode Csv.NoHeader <$> BL.readFile (gradebookFile top)
   case gb of
     Left msg -> error msg
     Right gb -> return $ V.toList gb
@@ -174,6 +182,48 @@ gradeFromLog id dir logFile log = do
   return fb
     where feedbackFile = dir </> feedbackFileName
           scoreFile = dir </> scoreFileName
+
+pScoreHeader :: Parsec Void String Int
+pScoreHeader = do
+  skipManyTill anySingle (char '<')
+  string "Numeric MaxPoints:"
+  score <- some digitChar
+  char '>'
+  return (read score)
+
+runPublish :: [(String, String)] -> FilePath -> [Vector String] -> IO ()
+runPublish dirMap top gb = do
+  message "Publishing..."
+  createDirectoryIfMissing True feedbackDirPath
+  forM_ dirMap copyFeedback
+  message "Copying miscellaneous files"
+  forM_ miscFileNames $ \x -> copyFile (hwDir top </> x) (feedbackDirPath </> x)
+  message "Loading scores"
+  scoreMap <- forM dirMap getScore
+  message "Building gradebook"
+  let gb' = (head gb) : map (updateStudent scoreMap) (tail gb)
+  message "Writing gradebook"
+  BL.writeFile (outputDir top </> gradebookFileName) $ Csv.encode gb'
+  message "ALL DONE!!"
+    where copyFeedback (id, dir) = do
+            let srcDir = buildDirFromId top id
+            let tgtDir = feedbackDirPath </> dir
+            message $ "Copying feedback for " ++ id
+            createDirectoryIfMissing False tgtDir
+            copyFile (srcDir </> feedbackFileName) (tgtDir </> feedbackFileName ++ ".txt")
+          getScore (id, dir) = do
+            score <- read <$> readFile (buildDirFromId top id </> scoreFileName)
+            return (id, score)
+          updateStudent scoreMap student = case lookup (student ! idIdx) scoreMap of
+                                             Just s -> student // [(scoreIdx, showScore s)]
+                                             Nothing -> student
+          showScore :: Ratio Int -> String
+          showScore score = show $ ceiling (score * fromIntegral totalScore)
+          totalScore = let scoreHeader = (head gb ! scoreIdx)
+                       in case parse pScoreHeader "gradebook" scoreHeader of
+                            Left msg -> error $ errorBundlePretty msg
+                            Right s -> s
+          feedbackDirPath = feedbackDir top
 
 feedback :: (String -> IO ()) -> Feedback -> IO ()
 feedback pp Feedback { fbName = name
