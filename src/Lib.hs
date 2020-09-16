@@ -53,7 +53,8 @@ miscFileNames = ["index.html"]
 
 feedbackDir top = outputDir top </> "feedback"
 
-buildDirFromId top id = buildDir top </> dropWhile (== '#') id
+normalizeId = dropWhile (== '#')
+buildDirFromId top id = buildDir top </> id
 logFileName = "log"
 feedbackFileName = "feedback"
 scoreFileName = "score"
@@ -76,9 +77,13 @@ run_ cmd top args = do
   students <- loadStudentDirs top
   go cmd args gb $ buildDirMap (tail gb) students
     where go "prepare" (hwFile:_) _ dirMap = runPrepare dirMap top hwFile
-          go "grade" _ _ dirMap = runGrade dirMap top
+          go "grade" [] _ dirMap = runGrade dirMap top
+          go "grade" xs _ dirMap = runGrade (filterDirMap dirMap xs) top
           go "publish" _ gb dirMap = runPublish dirMap top gb
           go _ _ _ _ = usage
+          filterDirMap dirMap xs
+            | any (\x -> isNothing (lookup x dirMap)) xs = error "Some students do not exist"
+            | otherwise = filter ((`elem` xs) . fst) dirMap
 
 loadGradebook :: FilePath -> IO [Vector String]
 loadGradebook top = do
@@ -98,7 +103,7 @@ loadStudentDirs top = do
 
 buildDirMap :: [Vector String] -> [(LocalTime, String, String)] -> [(String, String)]
 buildDirMap gb students = mapMaybe go gb
-  where go x = let id = x ! idIdx
+  where go x = let id = normalizeId (x ! idIdx)
                    firstName = x ! firstNameIdx
                    lastName = x ! lastNameIdx
                    cands = filter (\(_, s, _) -> s == firstName ++ " " ++ lastName) students
@@ -159,7 +164,7 @@ runGrade_ id dir = do
   case ecode of
     ExitSuccess -> do
       log <- loadLog (BL.toStrict out)
-      fb <- gradeFromLog id dir logFile log
+      fb <- gradeFromLog dir logFile log
       return (id, Just fb)
     ExitFailure _ -> message "Compilation failed" >> return (id, Nothing)
     where loadLog out = do
@@ -169,8 +174,8 @@ runGrade_ id dir = do
             TIO.readFile logFile
           logFile = dir </> logFileName
 
-gradeFromLog :: String -> FilePath -> FilePath -> Text -> IO Feedback
-gradeFromLog id dir logFile log = do
+gradeFromLog :: FilePath -> FilePath -> Text -> IO Feedback
+gradeFromLog dir logFile log = do
   message "Parsing"
   let hw = parseHomework logFile log
   message "Grading"
@@ -214,7 +219,7 @@ runPublish dirMap top gb = do
           getScore (id, dir) = do
             score <- read <$> readFile (buildDirFromId top id </> scoreFileName)
             return (id, score)
-          updateStudent scoreMap student = case lookup (student ! idIdx) scoreMap of
+          updateStudent scoreMap student = case lookup (normalizeId (student ! idIdx)) scoreMap of
                                              Just s -> student // [(scoreIdx, showScore s)]
                                              Nothing -> student
           showScore :: Ratio Int -> String
