@@ -30,6 +30,7 @@ dependencies:
 - directory
 - cassava
 - time
+- typed-process
 - pretty-simple
 
 library:

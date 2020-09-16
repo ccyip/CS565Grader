@@ -18,8 +18,10 @@ import Definitions
 
 type Parser = Parsec Void Text
 
-parseHomework :: String -> Text -> Either String Homework
-parseHomework fname txt = first errorBundlePretty $ parse pHomework fname txt
+parseHomework :: String -> Text -> Homework
+parseHomework fname txt = case parse pHomework fname txt of
+                            Left msg -> error $ errorBundlePretty msg
+                            Right hw -> hw
 
 pQuoted :: Parser String
 pQuoted = char '"' *> someTill (anySingleBut '"') (char '"')
