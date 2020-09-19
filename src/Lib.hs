@@ -65,7 +65,7 @@ usage = do
   prog <- getProgName
   putStrLn "Usage:"
   putStrLn $ prog ++ " prepare <workdir> <homework file>"
-  putStrLn $ prog ++ " grade <workdir> [student IDs]"
+  putStrLn $ prog ++ " grade <workdir> [-f] [student IDs]"
   putStrLn $ prog ++ " publish <workdir>"
   exitFailure
 
@@ -82,13 +82,10 @@ run_ cmd top args = do
   students <- loadStudentDirs top
   go cmd args gb $ buildDirMap (tail gb) students
     where go "prepare" (hwFile:_) _ dirMap = runPrepare dirMap top hwFile
-          go "grade" [] _ dirMap = runGrade dirMap top
-          go "grade" xs _ dirMap = runGrade (filterDirMap dirMap xs) top
+          go "grade" ("-f":xs) _ dirMap = runGrade True dirMap top xs
+          go "grade" xs _ dirMap = runGrade False dirMap top xs
           go "publish" _ gb dirMap = runPublish dirMap top gb
           go _ _ _ _ = usage
-          filterDirMap dirMap xs
-            | any (\x -> isNothing (lookup x dirMap)) xs = error "Some students do not exist"
-            | otherwise = filter ((`elem` xs) . fst) dirMap
 
 loadGradebook :: FilePath -> IO [Vector String]
 loadGradebook top = do
@@ -145,10 +142,10 @@ runPrepare_ id dir top hwFile = do
             | otherwise = copyAux_ x
           copyAux_ x = copyFile (auxDirPath </> x) (tgtDirPath </> x)
 
-runGrade :: [(String, String)] -> FilePath -> IO ()
-runGrade dirMap top = do
+runGrade :: Bool -> [(String, String)] -> FilePath -> [String] -> IO ()
+runGrade clean dirMap top xs = do
   message "Grading..."
-  feedbacks <- forM dirMap $ \(id, _) -> runGrade_ id (buildDirFromId top id)
+  feedbacks <- forM (dirMap_ xs) $ \(id, _) -> runGrade_ clean id (buildDirFromId top id)
   let failedList = map fst $ filter (isNothing . snd) feedbacks
   let ungradedList = filter (not . null . snd) $ map (second (maybe [] getUngraded)) feedbacks
   message ""
@@ -159,11 +156,17 @@ runGrade dirMap top = do
             getUngradedItems exc = map ifbName
               $ filter (isNothing . ifbStatus) (efbItems exc)
             printUngraded (id, xs) = putStrLn $ id ++ ": " ++ intercalate ", " xs
+            dirMap_ [] = dirMap
+            dirMap_ xs = filterDirMap dirMap xs
+            filterDirMap dirMap xs
+              | any (\x -> isNothing (lookup x dirMap)) xs = error "Some students do not exist"
+              | otherwise = filter ((`elem` xs) . fst) dirMap
 
-runGrade_ :: String -> FilePath -> IO (String, Maybe Feedback)
-runGrade_ id dir = do
+runGrade_ :: Bool -> String -> FilePath -> IO (String, Maybe Feedback)
+runGrade_ clean id dir = do
   message ""
   message $ "Processing " ++ id ++ " in " ++ dir
+  when clean $ message "Cleaning" >> withCurrentDirectory dir (runProcess_ (proc "make" ["clean"]))
   message "Making"
   (ecode, out) <- withCurrentDirectory dir $ readProcessStdout "make"
   case ecode of
