@@ -10,6 +10,7 @@ Ltac ass := idtac "Assumptions:".
 Ltac verifier := idtac "~Verifier:".
 Ltac falsifier := idtac "~Falsifier:".
 Ltac error x := idtac "Fail:" x.
+Ltac error' := error "no comment".
 
 Ltac option k v := idtac "-" k ":" v.
 Ltac allowed_module_axioms := option "allowed_module_axioms".
@@ -50,5 +51,13 @@ Ltac print_local_option name A :=
       end
     | _ => idtac
     end.
+
+Tactic Notation "verify" constr(x) "by" tactic(t) :=
+    assert_succeeds (assert x by t).
+
+Tactic Notation "test" tactic(t) :=
+    first [ t | error' ].
+
+Axiom bad : False.
 
 Require Export local.
