@@ -131,8 +131,8 @@ gradeItem_ env Item { itName = name
                        }
         checkDeps xs _ =
           ItemFeedback { ifbName = name
-                       , ifbScore = BScore False
-                       , ifbStatus = Just False
+                       , ifbScore = Ungraded
+                       , ifbStatus = Nothing
                        , ifbComment = "Depends on incorrect definitions " ++ intercalate ", " xs
                        }
 
