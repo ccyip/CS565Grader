@@ -27,7 +27,15 @@ pQuoted :: Parser String
 pQuoted = char '"' *> someTill (anySingleBut '"') (char '"')
 
 pOption :: Parser (String, String)
-pOption = string "- " >> (,) <$> pQuoted <* string " : " <*> pQuoted <* eol
+pOption = do
+  string "- "
+  key <- pQuoted
+  space
+  string ":"
+  space
+  value <- pQuoted
+  eol
+  return (key, value)
 
 pHomework :: Parser Homework
 pHomework = do
@@ -92,7 +100,8 @@ pManualGrade = do
                   , NScore . read <$> some digitChar
                   ]
   eol
-  string "Comment: "
+  string "Comment:"
+  space
   comment <- choice [ "" <$ string "None"
                     , pQuoted
                     ]
