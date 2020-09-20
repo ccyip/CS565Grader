@@ -136,7 +136,7 @@ runPrepare_ id dir top hwFile = do
           auxDirPath = auxDir top
           copyAux x
             | "local" `isSuffixOf` takeBaseName x = do
-                exists <- doesFileExist (auxDirPath </> x)
+                exists <- doesFileExist (tgtDirPath </> x)
                 if exists
                   then message ("Skipping local file " ++ x)
                   else copyAux_ x
