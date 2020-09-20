@@ -73,6 +73,7 @@ message :: String -> IO ()
 message x = putStrLn $ ">> " ++ x
 
 run :: [String] -> IO ()
+run ("parse":file:_) = runParse file
 run (cmd:top:args) = run_ cmd top args
 run _ = usage
 
@@ -195,6 +196,16 @@ gradeFromLog dir logFile log = do
   return fb
     where feedbackFile = dir </> feedbackFileName
           scoreFile = dir </> scoreFileName
+
+runParse :: FilePath -> IO ()
+runParse file = do
+  txt <- TIO.readFile file
+  let hw = parseHomework file txt
+  message "Homework"
+  pPrint hw
+  let fb = grade hw
+  message "Feedback:"
+  pPrint fb
 
 pScoreHeader :: Parsec Void String Int
 pScoreHeader = do
