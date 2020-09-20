@@ -55,6 +55,8 @@ Ltac print_local_option name A :=
 Tactic Notation "verify" constr(x) "by" tactic(t) :=
     assert_succeeds (assert x by t).
 
+Tactic Notation "verify'" constr(x) "by" tactic(t) := assert x.
+
 Tactic Notation "test" tactic(t) :=
     first [ t | error' ].
 
