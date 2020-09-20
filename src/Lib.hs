@@ -169,7 +169,7 @@ runGrade_ clean id dir = do
   message $ "Processing " ++ id ++ " in " ++ dir
   when clean $ message "Cleaning" >> withCurrentDirectory dir (runProcess_ (proc "make" ["clean"]))
   message "Making"
-  (ecode, out) <- withCurrentDirectory dir $ readProcessStdout "make"
+  (ecode, out) <- withCurrentDirectory dir $ readProcessStdout (proc "make" ["-s"])
   case ecode of
     ExitSuccess -> do
       log <- loadLog (BL.toStrict out)
