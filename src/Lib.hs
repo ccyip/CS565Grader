@@ -204,8 +204,9 @@ runParse file = do
   message "Homework"
   pPrint hw
   let fb = grade hw
-  message "Feedback:"
+  message "Feedback"
   pPrint fb
+  feedback putStrLn fb
 
 pScoreHeader :: Parsec Void String Int
 pScoreHeader = do
