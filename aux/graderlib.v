@@ -52,13 +52,16 @@ Ltac print_local_option name A :=
     | _ => idtac
     end.
 
+Tactic Notation "test" tactic(t) :=
+    first [ t | error' ].
+
 Tactic Notation "verify" constr(x) "by" tactic(t) :=
     assert_succeeds (assert x by t).
 
 Tactic Notation "verify'" constr(x) "by" tactic(t) := assert x.
 
-Tactic Notation "test" tactic(t) :=
-    first [ t | error' ].
+Ltac test_type A B :=
+    first [ check_type A B | error' ].
 
 Axiom bad : False.
 
