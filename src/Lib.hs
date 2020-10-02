@@ -129,8 +129,11 @@ runPrepare_ id dir top hwFile = do
   xs <- listDirectory auxDirPath
   message $ "Copying auxiliary files"
   mapM_ copyAux xs
-  message $ "Copying homework file from " ++ srcDirPath
-  copyFile (srcDirPath </> hwFile) (tgtDirPath </> hwFile)
+  b <- doesFileExist (tgtDirPath </> hwFile)
+  if b
+    then message "Skipping homework file"
+    else message ("Copying homework file from " ++ srcDirPath)
+         >> copyFile (srcDirPath </> hwFile) (tgtDirPath </> hwFile)
     where tgtDirPath = buildDirFromId top id
           srcDirPath = hwDir top </> dir
           auxDirPath = auxDir top
