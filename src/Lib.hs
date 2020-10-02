@@ -102,7 +102,7 @@ loadStudentDirs top = do
     where go x = case splitOn " - " x of
                       _:name:time:_ -> Just (parseTime time, name, x)
                       _ -> Nothing
-          parseTime = parseTimeOrError True defaultTimeLocale "%b %-e, %Y %-l:%M %P"
+          parseTime = parseTimeOrError True defaultTimeLocale "%b %-e, %Y %-l %M %P"
 
 buildDirMap :: [Vector String] -> [(LocalTime, String, String)] -> [(String, String)]
 buildDirMap gb students = mapMaybe go gb
