@@ -246,7 +246,7 @@ runPublish dirMap top gb = do
                                              Just s -> student // [(scoreIdx, showScore s)]
                                              Nothing -> student
           showScore :: Ratio Int -> String
-          showScore score = show $ ceiling (score * fromIntegral totalScore)
+          showScore score = show $ round (score * fromIntegral totalScore)
           totalScore = let scoreHeader = (head gb ! scoreIdx)
                        in case parse pScoreHeader "gradebook" scoreHeader of
                             Left msg -> error $ errorBundlePretty msg
