@@ -72,8 +72,8 @@ gradeExercise Exercise { excName = name
                           }
     where getPoints xs@(x:_)
             | ifbName x == name = normalScore $ ifbScore x
-            | all (== Just True) $ map ifbStatus xs = points
-            | otherwise = 0
+            | otherwise = let n = length (filter (== Just True) (map ifbStatus xs))
+                          in floor (n * points % length xs)
           normalScore Ungraded = 0
           normalScore (NScore n) = n
           normalScore (BScore b) = if b then points else 0
