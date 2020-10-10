@@ -143,6 +143,7 @@ runPrepare_ id dir top hwFile = do
                 if exists
                   then message ("Skipping local file " ++ x)
                   else copyAux_ x
+            | x == hwFile = error $ hwFile ++ " in aux directory"
             | otherwise = copyAux_ x
           copyAux_ x = copyFile (auxDirPath </> x) (tgtDirPath </> x)
 
