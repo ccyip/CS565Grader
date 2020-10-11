@@ -55,6 +55,9 @@ Ltac print_local_option name A :=
 Tactic Notation "test" tactic(t) :=
     first [ t | error' ].
 
+Tactic Notation "refuse" tactic(t) string(s) :=
+    tryif t then error s else idtac.
+
 Tactic Notation "verify" constr(x) "by" tactic(t) :=
     assert_succeeds (assert x by t).
 
