@@ -50,6 +50,7 @@ pHomework = do
                   , hwComment = fromMaybe "" $ lookup "comment" opts
                   , hwAllowedModuleAxioms = readOptionList "allowed_module_axioms" opts
                   , hwAllowedAxioms = readOptionList "allowed_axioms" opts
+                  , hwBonus = readOptionList "bonus" opts
                   , hwExercises = exercises
                   }
     where checkPenalty x

@@ -34,15 +34,18 @@ grade Homework { hwName = name
                , hwComment
                , hwAllowedModuleAxioms
                , hwAllowedAxioms
+               , hwBonus
                , hwExercises
                } =
   Feedback { fbName = name
            , fbTotalPoints = total
+           , fbBonusPoints = bonus
            , fbPoints = points
            , fbRawScore = raw
-           , fbFinalScore = maybe raw (\p -> raw * (1 - p % 100)) hwPenalty
+           , fbFinalScore = min 1 $ maybe raw (\p -> raw * (1 - p % 100)) hwPenalty
            , fbPenalty = hwPenalty
            , fbComment = hwComment
+           , fbBonus = hwBonus
            , fbExercises = efbs
            }
   where efbs = evalState (mapM gradeExercise hwExercises) env
@@ -54,7 +57,8 @@ grade Homework { hwName = name
                   , evAllowedModuleAxioms = hwAllowedModuleAxioms
                   , evAllowedAxioms = hwAllowedAxioms
                   }
-        total = sum $ map efbTotalPoints efbs
+        bonus = sum $ map efbTotalPoints (filter (\e -> efbName e `elem` hwBonus) efbs)
+        total = sum (map efbTotalPoints efbs) - bonus
         points = sum $ map efbPoints efbs
         raw = points % total
 

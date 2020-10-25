@@ -257,11 +257,13 @@ runPublish dirMap top gb = do
 feedback :: (String -> IO ()) -> Feedback -> IO ()
 feedback pp Feedback { fbName = name
                      , fbTotalPoints = total
+                     , fbBonusPoints = bonus
                      , fbPoints = points
                      , fbRawScore = raw
                      , fbFinalScore = final
                      , fbPenalty
                      , fbComment
+                     , fbBonus
                      , fbExercises = excs
                      } = do
   pp $ "~~~ Feedback ~~~"
@@ -269,11 +271,14 @@ feedback pp Feedback { fbName = name
   pp $ "Final Score: " ++ showScore final
   pp ""
   pp $ "Total Possible Points: " ++ show total
+  when (bonus > 0) $ pp ("Bonus Points: " ++ show bonus)
   pp $ "Earned Points: " ++ show points
   pp $ "Raw Score: " ++ showScore raw
   maybe (return ()) (\pen -> pp ("Applied Penalty: -" ++ show pen ++ "%")) fbPenalty
   pp $ "Comment: " ++ if null fbComment then "None" else fbComment
   pp ""
+  pp "~~~ Summary ~~~"
+  when (not (null fbBonus)) $ pp ("Bonus exercises: " ++ intercalate ", " fbBonus)
   feedbackSummary pp excs
   pp ""
   pp $ "~~~ Detail ~~~"
@@ -283,7 +288,6 @@ feedback pp Feedback { fbName = name
 
 feedbackSummary :: (String -> IO ()) -> [ExerciseFeedback] -> IO ()
 feedbackSummary pp excs = do
-  pp "~~~ Summary ~~~"
   if null wrongs
     then pp "All exercises are correct!"
     else pp "The following exercises are incorrect:" >> mapM_ pp wrongs

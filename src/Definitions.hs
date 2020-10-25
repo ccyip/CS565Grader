@@ -8,6 +8,7 @@ data Homework = Homework
   , hwComment :: String
   , hwAllowedModuleAxioms :: [String]
   , hwAllowedAxioms :: [String]
+  , hwBonus :: [String]
   , hwExercises :: [Exercise]
   } deriving (Show)
 
@@ -44,11 +45,13 @@ data CheckerType = CompleteChecker | SoundVerifier | SoundFalsifier
 data Feedback = Feedback
   { fbName :: String
   , fbTotalPoints :: Int
+  , fbBonusPoints :: Int
   , fbPoints :: Int
   , fbRawScore :: Ratio Int
   , fbFinalScore :: Ratio Int
   , fbPenalty :: Maybe Int
   , fbComment :: String
+  , fbBonus :: [String]
   , fbExercises :: [ExerciseFeedback]
   } deriving (Show)
 
