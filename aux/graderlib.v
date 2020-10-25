@@ -16,6 +16,7 @@ Ltac option k v := idtac "-" k ":" v.
 Ltac allowed_module_axioms := option "allowed_module_axioms".
 Ltac allowed_axioms := option "allowed_axioms".
 Ltac dependencies := option "dependencies".
+Ltac bonus := option "bonus".
 
 Parameter MISSING: Type.
 
