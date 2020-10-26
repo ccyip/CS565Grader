@@ -152,7 +152,10 @@ runGrade clean dirMap top xs = do
   message "Grading..."
   feedbacks <- forM (dirMap_ xs) $ \(id, _) -> runGrade_ clean id (buildDirFromId top id)
   let failedList = map fst $ filter (isNothing . snd) feedbacks
-  let ungradedList = filter (not . null . snd) $ map (second (maybe [] getUngraded)) feedbacks
+  let ungradedListById = map (second (maybe [] getUngraded)) feedbacks
+  let itmNames = maybe [] (getItmNames . fromJust . snd) $ find (isJust . snd) feedbacks
+  let ungradedListByItm = map (\itm -> (itm, getUngradedByItm itm ungradedListById)) itmNames
+  let ungradedList = filter (not . null . snd) ungradedListByItm
   message ""
   unless (null failedList) $ message "Compilation failed:" >> forM_ failedList putStrLn
   unless (null ungradedList) $ message "Need manual grading:" >> forM_ ungradedList printUngraded
@@ -160,7 +163,9 @@ runGrade clean dirMap top xs = do
       where getUngraded fb = concatMap getUngradedItems (fbExercises fb)
             getUngradedItems exc = map ifbName
               $ filter (isNothing . ifbStatus) (efbItems exc)
-            printUngraded (id, xs) = putStrLn $ id ++ ": " ++ intercalate ", " xs
+            printUngraded (k, xs) = putStrLn $ k ++ ": " ++ intercalate ", " xs
+            getItmNames fb = concatMap (map ifbName . efbItems) $ fbExercises fb
+            getUngradedByItm itm xs = map fst $ filter (elem itm . snd) xs
             dirMap_ [] = dirMap
             dirMap_ xs = filterDirMap dirMap xs
             filterDirMap dirMap xs
