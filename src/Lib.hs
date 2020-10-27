@@ -283,7 +283,7 @@ feedback pp Feedback { fbName = name
   pp $ "Comment: " ++ if null fbComment then "None" else fbComment
   pp ""
   pp "~~~ Summary ~~~"
-  when (not (null fbBonus)) $ pp ("Bonus exercises: " ++ intercalate ", " fbBonus)
+  when (not (null fbBonus)) $ pp ("Bonus exercises: " ++ intercalate ", " fbBonus) >> pp ""
   feedbackSummary pp excs
   pp ""
   pp $ "~~~ Detail ~~~"
