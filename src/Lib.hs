@@ -222,7 +222,7 @@ pScoreHeader = do
   skipManyTill anySingle (char '<')
   string "Numeric MaxPoints:"
   score <- some digitChar
-  char '>'
+  skipManyTill anySingle (char '>')
   return (read score)
 
 runPublish :: [(String, String)] -> FilePath -> [Vector String] -> IO ()
