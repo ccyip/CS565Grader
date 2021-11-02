@@ -74,6 +74,10 @@ message x = putStrLn $ ">> " ++ x
 
 run :: [String] -> IO ()
 run ("parse":file:_) = runParse file
+run ("one":dir:_) = do
+  message "Grading..."
+  xs <- (maybe [] getUngraded . snd) <$> runGrade_ False "unknown" dir
+  unless (null xs) $ message "Need manual grading:" >> putStrLn (intercalate ", " xs)
 run (cmd:top:args) = run_ cmd top args
 run _ = usage
 
@@ -147,6 +151,11 @@ runPrepare_ id dir top hwFile = do
             | otherwise = copyAux_ x
           copyAux_ x = copyFile (auxDirPath </> x) (tgtDirPath </> x)
 
+getUngraded :: Feedback -> [String]
+getUngraded fb = concatMap getUngradedItems (fbExercises fb)
+  where getUngradedItems exc = map ifbName
+              $ filter (isNothing . ifbStatus) (efbItems exc)
+
 runGrade :: Bool -> [(String, String)] -> FilePath -> [String] -> IO ()
 runGrade clean dirMap top xs = do
   message "Grading..."
@@ -160,10 +169,7 @@ runGrade clean dirMap top xs = do
   unless (null failedList) $ message "Compilation failed:" >> forM_ failedList putStrLn
   unless (null ungradedList) $ message "Need manual grading:" >> forM_ ungradedList printUngraded
   when (null failedList && null ungradedList) $ message "ALL DONE!!"
-      where getUngraded fb = concatMap getUngradedItems (fbExercises fb)
-            getUngradedItems exc = map ifbName
-              $ filter (isNothing . ifbStatus) (efbItems exc)
-            printUngraded (k, xs) = putStrLn $ k ++ ": " ++ intercalate ", " xs
+      where printUngraded (k, xs) = putStrLn $ k ++ ": " ++ intercalate ", " xs
             getItmNames fb = concatMap (map ifbName . efbItems) $ fbExercises fb
             getUngradedByItm itm xs = map fst $ filter (elem itm . snd) xs
             dirMap_ [] = dirMap
