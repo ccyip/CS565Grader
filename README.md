@@ -127,6 +127,12 @@ explain that in details in section (Grading scripts).
   Finally, click the `select all rows` checkbox and then click `Publish
   Feedback`.
   
+  Be careful that the homework category and homework name should not be the
+  same! You can check that by going to `Grades` tab: the first line of the
+  header is category and the second line is homework names. Importing grades or
+  uploading feedback files could trigger yet another bug that prevents you from
+  doing so if they use the same name. Again, blame BrightSpace.
+
 - Inform the students: we have finished the grading! Announce it on whatever
   platform we decide to use (e.g., Piazza).
 
