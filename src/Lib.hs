@@ -64,9 +64,9 @@ usage :: IO ()
 usage = do
   prog <- getProgName
   putStrLn "Usage:"
-  putStrLn $ prog ++ " prepare <workdir> <homework file>"
-  putStrLn $ prog ++ " grade <workdir> [-f] [student IDs]"
-  putStrLn $ prog ++ " publish <workdir>"
+  putStrLn $ prog ++ " prepare <top dir> <homework file>"
+  putStrLn $ prog ++ " grade <top dir> [-f] [student IDs]"
+  putStrLn $ prog ++ " publish <top dir>"
   exitFailure
 
 message :: String -> IO ()
