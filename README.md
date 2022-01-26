@@ -24,7 +24,7 @@ explain that in details in section (Grading scripts).
 
 - Export grade book: go to BrightSpace, select the `Grades` tab, and click the
   `Export` button. Make sure we select the following options:
-  + Key feild: Org Defined ID
+  + Key field: Org Defined ID
   + Grade values: points grade
   + User details: last name and first name
   
@@ -138,4 +138,8 @@ explain that in details in section (Grading scripts).
 
 ## Commands
 
+TODO
+
 ## Grading scripts
+
+TODO
