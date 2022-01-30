@@ -55,10 +55,10 @@ explain that in details in section (Grading scripts).
     should have the format `<some id> - <last name> <first name> - <timestamp>`.
     There might be multiple submissions from the same student, and the grader
     will pick the latest one using the timestamp. However, BrightSpace
-    constantly changes their timestamp format for no reason (they changed 3
-    times in one semester!). In that case, the grader will throw an error
-    (hopefully!), and you will have to update the parser for timestamp (`Lib.hs`
-    -> `loadStudentDirs` -> `parseTime`).
+    constantly changes their timestamp format (and the format of this directory
+    name) for no reason (they changed 3 times in one semester!). In that case,
+    the grader will throw an error (hopefully!), and you will have to update the
+    corresponding parser (`loadStudentDirs` in `Lib.hs`).
 
   We also need to create a directory `aux`, consisting of grading scripts. I
   will talk about this in details later, but now you just need to know the
@@ -85,22 +85,21 @@ explain that in details in section (Grading scripts).
   
 - Manually grade some exercises: ideally the `grade` command finishes all the
   grading, but in most cases we need to manually grade some exercises. It is
-  either because there are open questions, or because we need to give partial
-  credits for some exercises. The grader allows us to write some automation
-  (called sound verifier and sound falsifier) to decide if this student gets the
-  answers correct, even if the questions might be open. Although a good
-  automation can greatly reduce the number of exercises that require manual
-  grading, we still need to manually grade some answers if the automation fail.
+  either because they are open questions, or because we need to give partial
+  credits. The grader allows us to write some automation (called sound verifier
+  and sound falsifier) to decide if this student gets the answers correct (or
+  incorrect) incompletely. Although a good automation can greatly reduce the
+  number of exercises that require manual grading, we still need to manually
+  grade some answers if the automation fails.
   
   After running the `grade` command, it should output a list of exercises and
   student IDs that requires manual grading (in the form of `<exercise name>:
   <student IDs>`). Manually process those exercises and update the scores in the
   corresponding `local.v`. You can also update the automation in testing scripts
-  to handle this student's case. I will talk more about it in section (Grading
-  scripts), but the key is to balance efforts spending on automation and efforts
-  spending on manual grading. Strengthening the automation might take more work
-  than manual grading if we overdo it. But it can save us a lot of efforts when
-  it's done right.
+  to cover more cases. I will talk more about it later, but the key is to
+  balance efforts spending on automation and efforts spending on manual grading.
+  Strengthening the automation might take more work than manual grading if we
+  overdo it. But it can save us a lot of efforts when it's done right.
   
   Re-run `grade` command until we finish all manual grading and it should output
   "All done!!". Usually I like to run `stack run -- grade <top directory> -f`
@@ -109,7 +108,9 @@ explain that in details in section (Grading scripts).
   
 - Generate `output` directory: run `stack run -- publish <top directory>`. The
   generated `output` directory should contain an updated `gradebook.csv` and a
-  `feedback` directory which consists of `feedback.txt` for each student.
+  `feedback` directory which consists of `feedback.txt` for each student. Check
+  some of these files just to make sure nothing weird happened. Note that some
+  students might get more points than maximum points due to bonus questions.
   
 - Publish feedback and grades: go to `output/feedback`, and run `zip -r
   feedback.zip . -x ".*"` (on Mac, you may run `zip -r feedback.zip . -x ".*" -x
@@ -119,13 +120,24 @@ explain that in details in section (Grading scripts).
   zip file from GUI, but it will most likely not work! Blame BrightSpace for
   that.
   
-  Go to BrightSpace, and select `Grades` tab. Click `Import` button, and import
-  the grades using `gradebook.csv` in `output` directory. Then go to `Course
-  Tools` tab and click `Assignments`. After selecting the corresponding
-  homework, click `Add Feedback Files` on top, and upload `feedback.zip`. You
-  should check some students and see if `feedback.txt` appears as attachments.
-  Finally, click the `select all rows` checkbox and then click `Publish
-  Feedback`.
+  Go to BrightSpace, and select `Grades` tab. Click the drop-down menu of the
+  grade category (the first line of the table header) and select `Edit`. Find
+  the option `Allow category grade to exceed category weight` in the `Edit` page
+  and consider enabling it if you want the bonus points of this homework/exam to
+  compensate their overall grade (I enabled it when I taught the course, but
+  please discuss it with the instructor!). Go back to the `Grades` page. Click
+  the drop-down menu of the particular homework/exam (the second line of the
+  table header) and select `Edit`. Find the option `Can Exceed` and consider
+  enabling it (to compensate the grade in this category with bonus points).
+  
+  Go back to the `Grades` page, click `Import` button, and import the grades
+  using `gradebook.csv` in `output` directory.
+  
+  Go to `Course Tools` tab and click `Assignments`. After selecting the
+  corresponding homework, click `Add Feedback Files` on top, and upload
+  `feedback.zip`. You should check some students and see if `feedback.txt`
+  appears as attachments. Finally, click the `select all rows` checkbox and then
+  click `Publish Feedback`.
   
   Be careful that the homework category and homework name should not be the
   same! You can check that by going to `Grades` tab: the first line of the
@@ -203,10 +215,13 @@ workflow.
   instructor) to develop the first version of the test script. In this
   iteration, I make sure the automation is good enough that it requires no
   manual grading for this perfect homework.
+- Then I improve the test script against a blank homework file. It should
+  automatically give the blank homework zero (sometimes it's not possible
+  because we may need to give partial credits).
 - When we start grading real students' homework, there will be a lot of
-  exercises requiring manual grading. I check a student's answer and ask myself
+  exercises requiring manual grading. I check one such answer and ask myself
   this question: is this answer very exotic? How many other students might have
-  answer similar to this? If it is not likely, I give it a manual grade and
+  answers similar to this? If it is not likely, I give it a manual grade and
   check the next submission. But if it seems like a common answer, I update
   `test.v` (interactively) so that it can automatically grade this answer too.
   Then copy `test.v` to `input/aux`, and rerun `prepare` and `grade`. It also
@@ -214,3 +229,9 @@ workflow.
   exercises that you need to manually grade!
 - Repeat this process of manual grading and script enhancing, until all
   exercises are graded.
+
+## TODO
+
+- The design of the `dependencies` option is flawed. See the inline comments in
+  the [example](/example/for_grader/input/aux/test.v). I know how to fix it, but
+  haven't got the chance to do it yet.
