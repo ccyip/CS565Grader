@@ -16,10 +16,10 @@ have installed `stack` and know how to use it to build and run Haskell programs.
 I will not talk about how to write grading scripts in this section, and I will
 explain that in details in section (Grading scripts).
 - Distribute homework: a homework typically consists of a homework file with
-  exercises, a testing file for sanity check, a `Makefile` and `_CoqProject`
-  file for building, and auxiliar files that the homework imports. Although the
-  testing file is somewhat similar to the testing file used for grading, make
-  sure to not reveal any answers in this testing file. See [an example
+  exercises, a test file for sanity check, a `Makefile` and `_CoqProject`
+  file for building, and auxiliary files that the homework imports. Although the
+  test file is somewhat similar to the test file used for grading, make
+  sure you do not reveal any answers in this test file. See [an example
   homework](/example/for_student).
 
 - Export grade book: go to BrightSpace, select the `Grades` tab, and click the
@@ -55,7 +55,7 @@ explain that in details in section (Grading scripts).
     is the homework file, usually called `hw<number>.v`. The directory name
     should have the format `<some id> - <last name> <first name> - <timestamp>`.
     There might be multiple submissions from the same student, and the grader
-    will pick the latest one using the timestamp. However, BrightSpace
+    will pick the latest one according to the timestamp. However, BrightSpace
     constantly changes their timestamp format (and the format of this directory
     name) for no reason (they changed 3 times in one semester!). In that case,
     the grader will throw an error (hopefully!), and you will have to update the
@@ -69,7 +69,7 @@ explain that in details in section (Grading scripts).
   
 - Prepare the build directory: run `stack run -- prepare <top directory>
   <homework file>`. For example, `stack run -- prepare for_grader hw.v` if you
-  try out this using the [example grader homework](/example/for_grader). Check
+  try this on the [example](/example/for_grader). Check
   the output of this command and see if there is anything weird, e.g., you may
   check if it indeed copies the latest submission if a student has multiple
   submissions. At the end of the output, it should say "All done!!".
@@ -77,7 +77,7 @@ explain that in details in section (Grading scripts).
   Also check the generated `build` directory (e.g., `for_grader/build`). It
   should consist of directories indexed by PUID, each of which contains the
   student's homework and the grading scripts from `aux`. You should try not to
-  map these PUID to the students' names, to minimize bias.
+  mentally map these PUIDs to the students' names, to minimize bias.
 
 - Build and grade homework: run `stack run -- grade <top directory>`. For
   example, `stack run -- grade for_grader`. It is possible that the compilation
@@ -96,11 +96,11 @@ explain that in details in section (Grading scripts).
   grade some answers if the automation fails.
   
   After running the `grade` command, it should output a list of exercises and
-  student IDs that requires manual grading (in the form of `<exercise name>:
+  student IDs that require manual grading (in the form of `<exercise name>:
   <student IDs>`). Manually process those exercises and update the scores in the
-  corresponding `local.v`. You can also update the automation in testing scripts
+  corresponding `local.v`. You can also update the automation in test scripts
   to cover more cases. I will talk more about it later, but the key is to
-  balance efforts spending on automation and efforts spending on manual grading.
+  balance the efforts spent on automation and efforts spent on manual grading.
   Strengthening the automation might take more work than manual grading if we
   overdo it. But it can save us a lot of efforts when it's done right.
   
@@ -142,8 +142,8 @@ explain that in details in section (Grading scripts).
   Go back to the `Grades` page, click `Import` button, and import the grades
   using `gradebook.csv` in `output` directory.
   
-  Go to `Course Tools` tab and click `Assignments`. After selecting the
-  corresponding homework, click `Add Feedback Files` on top, and upload
+  Go to `Course Tools` tab and click `Assignments`. Select the
+  corresponding homework. In the homework page, click `Add Feedback Files` on top, and upload
   `feedback.zip`. You should check some students and see if `feedback.txt`
   appears as attachments. Finally, click the `select all rows` checkbox and then
   click `Publish Feedback`.
@@ -163,7 +163,7 @@ This section documents the commands this grader provides. We invoke the commands
 by `stack run -- <command> <arguments>`.
 
 - `prepare <top directory> <homework file>`: create `build` directory from
-  `input` directory. E.g., `prepare for_grader hw.v`. One important note is that
+  `input` directory, e.g., `prepare for_grader hw.v`. Importantly,
   this command does not overwrite the homework file and `local.v` (actually all
   files end with `local`) if they are already present in `build` directory, so
   we can safely rerun this command when we make updates to the grading scripts.
@@ -173,17 +173,18 @@ by `stack run -- <command> <arguments>`.
 - `publish <top directory>`: create `output` directory with feedbacks and
   updated gradebook.
 - `parse <log file>`: parse a log file, grade it and print out the result. The
-  log file is generated by running the grading script (e.g., `make -s > log`).
-  This command is mostly for debugging.
-- `one <homework directory>`: grade a single directory outside of `top
-  directory`. This homework directory should follow the same structure as the
+  log file is generated by making the grading script (e.g., `make -s > log`),
+  and it is already in the `build` directory if you ran the `grade` command. This
+  `parse` command is mostly for debugging.
+- `one <homework directory>`: grade a single directory outside of `top`
+  directory. This homework directory should follow the same structure as the
   directory `<top directory>/build/<student ID>`, with scripts from `aux` and
   the student homework file. This bypasses the gradebook and other BrightSpace
   related processing. This command is used when you have to deal with a late
   submission (e.g., the student was sick) or other situations where you get the
   homework file in a different way (e.g., from email). After running this
   command, you can send the student the generated `feedback` file and the score
-  is also in that file.
+  is also in that file (you need to manually scale it though).
 
 ## Grading scripts
 
@@ -191,24 +192,24 @@ While the grader provides a framework for grading CS565 homeworks, it does not
 know how to do the actual grading. We need to develop grading scripts for each
 homework. Grading scripts reside in `<top directory>/input/aux` and will be
 copied to the `build` directory. See [an
-example](/example/for_grader/input/aux), and their inline comments to understand
+example](/example/for_grader/input/aux) and their inline comments to understand
 how to write them.
 
 This repository also provides [templates](/aux) of the grading scripts.
 
-The grading scripts (`aux` diretory) consist of the following files:
+The grading scripts (`aux` directory) consist of the following files:
 - `Makefile` and `_CoqProject`: you can use `Makefile` as it is from
   [templates](/aux). But you need to edit `_CoqProject` to modify or add file
   names.
 - `graderlib.v`: a small library for writing the test script. You should use the
   one from [template](/aux).
-- auxiliary files that the homework imports (but they should not submit).
+- auxiliary files that the homework imports.
 - `local.v`: this file contains comments for students, penalty, manually graded
   scores and other code that is specific to a student. See the inline comments
   in the [example](/example/for_grader/input/aux/local.v) for usage. This file
   will not be overwritten even when you run `prepare`, so we don't have worry
   about these information, like manually graded scores, getting lost.
-- `test.v`: the testing script in Coq (mostly Ltac). This is the most important
+- `test.v`: the test script in Coq (mostly Ltac). This is the most important
   file that we need to take time developing. The output will be redirected to a
   log file and used by the grader. It contains automation checking students'
   answers, sanity checks and options like what axioms they are allowed to use.
@@ -230,10 +231,10 @@ workflow.
 - When we start grading real students' homework, there will be a lot of
   exercises requiring manual grading. I check one such answer and ask myself
   this question: is this answer very exotic? How many other students might have
-  answers similar to this? If it is not likely, I give it a manual grade and
+  answers similar to this? If it is not likely, I give it a manual score and
   check the next submission. But if it seems like a common answer, I update
   `test.v` (interactively) so that it can automatically grade this answer too.
-  Then copy `test.v` to `input/aux`, and rerun `prepare` and `grade`. It also
+  Then copy this updated `test.v` to `input/aux`, and rerun `prepare` and `grade`. It also
   feels great when you add a snippet of automation and knock down half of the
   exercises that you need to manually grade!
 - Repeat this process of manual grading and script enhancing, until all
@@ -244,3 +245,9 @@ workflow.
 - The design of the `dependencies` option is flawed. See the inline comments in
   the [example](/example/for_grader/input/aux/test.v). I know how to fix it, but
   haven't got the chance to do it yet.
+- It seems the directory names of the student submissions that BrightSpace generates now
+  contain their username (email name). You need to update this grader to parse that. On
+  the other hand, originally I used first name and last name as the key to connect the
+  homework directories and the entries in `gradebook.csv`. Now that the username is available,
+  perhaps we should use that as the key. In that case, when we export the gradebook from
+  BrightSpace, we also need to select `email` in the `User details` option.
