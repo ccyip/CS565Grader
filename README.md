@@ -53,7 +53,7 @@ explain that in details in section (Grading scripts).
   + `index.html` for whatever reason
   + directory per submission: each directory should contain only one file, that
     is the homework file, usually called `hw<number>.v`. The directory name
-    should have the format `<some id> - <last name> <first name> - <timestamp>`.
+    should have the format `<some id> - <username> <last name> <first name> - <timestamp>`.
     There might be multiple submissions from the same student, and the grader
     will pick the latest one according to the timestamp. However, BrightSpace
     constantly changes their timestamp format (and the format of this directory
