@@ -111,9 +111,8 @@ loadStudentDirs top = do
 buildDirMap :: [Vector String] -> [(LocalTime, String, String)] -> [(String, String)]
 buildDirMap gb students = mapMaybe go gb
   where go x = let id = normalizeId (x ! idIdx)
-                   firstName = x ! firstNameIdxstackfor
-		   cd forsta
-                   lastName = x ! lastNameIdtack
+                   firstName = x ! firstNameIdx
+                   lastName = x ! lastNameIdx
                    cands = filter (\(_, s, _) -> (tail $ dropWhile (' '<) s) == firstName ++ " " ++ lastName) students
                in ((,) id) <$> pick cands
         pick [] = Nothing
